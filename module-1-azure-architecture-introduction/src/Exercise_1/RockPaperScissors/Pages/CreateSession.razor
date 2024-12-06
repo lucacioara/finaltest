@@ -1,0 +1,136 @@
+﻿@page "/createsession"
+@using RockPaperScissors.Models
+@using RockPaperScissors.Services
+@using System.Web
+@using System.Net
+@inject NavigationManager Navigation
+@inject ISessionService _sessionService
+@inject IBotService _botService
+@inject Session GameSession
+@inject IJSRuntime JS
+<PageTitle>Create Game Session</PageTitle>
+
+<div class="full-page-container" style="background-color: #87ceeb; position: relative; min-height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <div class="text-center p-5 rounded" style="background-color: rgba(255, 255, 255, 0.85); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 400px;">
+
+        <div class="d-flex justify-content-between align-items-center w-100 p-4" style="position: absolute; top: 0; left: 0; right: 0;">
+            @if (!string.IsNullOrEmpty(Player1.Name))
+            {
+                <h2 class="text-dark" style="font-family: 'Comic Sans MS', cursive; font-size: 1.5rem;">Welcome, @Player1.Name!</h2>
+            }
+        </div>
+
+        <h1 class="mb-4" style="font-family: 'Arial Black', sans-serif; color: #2e8b57;">Create Game Session</h1>
+
+        <div class="mb-4">
+            <button class="btn btn-lg btn-warning w-100" @onclick="InviteFriend" style="border-radius: 25px;">🤝 Invite a Friend</button>
+        </div>
+        @if (inviteLinkCreated)
+        {
+            <div class="row mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="disabledTextInput" value="@inviteLink" disabled>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" @onclick="CopyInviteLink" type="button">Copy</button>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="mb-4">
+            <button class="btn btn-lg btn-info w-100" @onclick="AddBot" style="border-radius: 25px;">🤖 Add a Bot</button>
+        </div>
+
+        <div class="mb-4">
+            <button class="btn btn-lg btn-success w-100" @onclick="CreateGameSession" style="border-radius: 25px;" disabled="@(!playerJoined)">🎮 Play</button>
+        </div>
+
+        @if (invited)
+        {
+            <div class="mb-4">
+                <button class="btn btn-lg btn-info w-100" @onclick="RefreshStatus" style="border-radius: 25px;">Refresh status</button>
+            </div>
+
+            @if (playerJoined)
+            {
+                <div class="alert alert-info" role="alert">
+                    You can start the game.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    You can't start the game until the other player joins the session.
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private bool inviteLinkCreated = false;
+    private string inviteLink = string.Empty;
+    private Player Player1;
+    private string sessionId;
+    private bool playerJoined;
+    private bool invited;
+
+    private SessionStatus status;
+
+    private void InviteFriend()
+    {
+        inviteLink = $"{Navigation.BaseUri}join/{sessionId}";
+        inviteLinkCreated = true;
+        invited = true;
+        StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        sessionId = GameSession.SessionId;
+        GameSession.Player.Choice = null;
+        Player1 = GameSession.Player;
+        GameSession.IsInvited = false;
+    }
+    private async Task RefreshStatus()
+    {
+        status = await _sessionService.GetStatus(sessionId);
+        switch (status.State)
+        {
+            case SessionState.Created:
+            case SessionState.WaitingForPlayer:
+                playerJoined = false;
+                break;
+            case SessionState.WaitingForMoves:
+                playerJoined = true;
+                break;
+        }
+    }
+    private async Task AddBot()
+    {
+        await _sessionService.InviteBot(sessionId);
+        invited = true;
+        StateHasChanged();
+    }
+
+    private async Task CreateGameSession()
+    {
+        Navigation.NavigateTo($"/gamepage");
+    }
+
+    private async Task CopyInviteLink()
+    {
+        await JS.InvokeVoidAsync("clipboardCopy", inviteLink);
+    }
+
+
+}
+<script>
+    window.clipboardCopy = function(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert("Copied to clipboard!");
+        })
+            .catch(function(error) {
+                alert("Error copying text: " + error);
+            });
+    }
+</script>

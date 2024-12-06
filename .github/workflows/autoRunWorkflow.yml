@@ -1,0 +1,34 @@
+name: Replace url for deployment button
+
+on:
+  create:
+    branches:
+      - master
+
+jobs:
+  replace-text:
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Replace placeholder in Markdown files
+        run: |
+          find "." -name "Prerequisites and Introduction" -exec sed -i "s|{Owner}|${GITHUB_REPOSITORY%/*}|g" {} +
+          find "." -name "Exercise1.md" -exec sed -i "s|{Owner}|${GITHUB_REPOSITORY%/*}|g" {} +
+          find "." -name "Exercise2.md" -exec sed -i "s|{Owner}|${GITHUB_REPOSITORY%/*}|g" {} +
+          find "." -name "Prerequisites and Introduction" -exec sed -i "s|{Repo}|${GITHUB_REPOSITORY#*/}|g" {} +
+          find "." -name "Exercise1.md" -exec sed -i "s|{Repo}|${GITHUB_REPOSITORY#*/}|g" {} +
+          find "." -name "Exercise2.md" -exec sed -i "s|{Repo}|${GITHUB_REPOSITORY#*/}|g" {} +
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Replace placeholder text with specific value"
+          git push

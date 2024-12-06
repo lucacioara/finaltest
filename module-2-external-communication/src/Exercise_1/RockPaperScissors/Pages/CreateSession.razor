@@ -1,0 +1,237 @@
+﻿@page "/createsession"
+@using Microsoft.AspNetCore.SignalR.Client
+@using RockPaperScissors.Models
+@using RockPaperScissors.Services
+@using System.Web
+@using System.Net
+@inject NavigationManager Navigation
+@inject HubConnection Connection
+@inject ISessionService _sessionService
+@inject IInviteService _inviteService
+@inject IBotService _botService
+@inject Session GameSession
+@inject IJSRuntime JS
+<PageTitle>Create Game Session</PageTitle>
+
+<div class="full-page-container" style="background-color: #87ceeb; position: relative; min-height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <div class="text-center p-5 rounded" style="background-color: rgba(255, 255, 255, 0.85); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 400px;">
+
+        <div class="d-flex justify-content-between align-items-center w-100 p-4" style="position: absolute; top: 0; left: 0; right: 0;">
+            @if (!string.IsNullOrEmpty(Player1.Name))
+            {
+                <h2 class="text-dark" style="font-family: 'Comic Sans MS', cursive; font-size: 1.5rem;">Welcome, @Player1.Name!</h2>
+            }
+        </div>
+
+        <h1 class="mb-4" style="font-family: 'Arial Black', sans-serif; color: #2e8b57;">Create Game Session</h1>
+
+        <div class="mb-4">
+            <button class="btn btn-lg btn-warning w-100" @onclick="InviteFriend" style="border-radius: 25px;">🤝 Invite a Friend</button>
+        </div>
+        @if (inviteLinkCreated)
+        {
+            <div class="row mb-3">
+                <div class="mb-3">
+                    <InputText @bind-Value="Email" id="emailInput" class="form-control form-control-lg" placeholder="Enter an email" style="border-radius: 25px;" />
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-lg px-5" @onclick="SendInvite" style="background-color: #ff6347; color: white; border-radius: 25px;">✉️ Send invite!</button>
+                </div>
+                <p class="form-label">Or copy the invite link:</p>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="disabledTextInput" value="@inviteLink" disabled>
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" @onclick="CopyInviteLink" type="button">Copy</button>
+                    </div>
+                </div>
+            </div>
+        }
+        @errorMessage
+        <div class="mb-4">
+            <button class="btn btn-lg btn-info w-100" @onclick="AddBot" style="border-radius: 25px;" disabled="@(BotResult!=HttpStatusCode.OK)">🤖 Add a Bot</button>
+        </div>
+        @if (BotResult == HttpStatusCode.ServiceUnavailable)
+        {
+            <button class="btn btn-primary mb-4" @onclick="CheckBotAPI" type="button">Check bot api</button>
+        }
+
+
+        <div class="mb-4">
+            <button class="btn btn-lg btn-success w-100" @onclick="CreateGameSession" style="border-radius: 25px;" disabled="@(!playerJoined)">🎮 Play</button>
+        </div>
+
+        @if (invited)
+        {
+            @if (playerJoined)
+            {
+                <div class="alert alert-info" role="alert">
+                    You can start the game.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    You can't start the game until the other player joins the session.
+                </div>
+            }
+        }
+    </div>
+
+    <div style="position: absolute; right: 20px; top: 50px; background-color: rgba(255, 255, 255, 0.85); padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <label for="roundsInput" class="form-label" style="font-size: 1.3rem; font-family: 'Arial Black', sans-serif; color: #2e8b57; margin-bottom: 10px; display: block; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);">
+            🔢 Number of Rounds (Odd Only):
+        </label>
+        <InputNumber @bind-Value="numberOfRounds" id="roundsInput" class="form-control" style="font-size: 1.1rem; width: 100px; padding: 10px; border-radius: 10px; border: 2px solid #2e8b57; background-color: #f0f8ff;" min="1" max="10" @oninput="ValidateOddInput" />
+        @if (isEvenNumber)
+        {
+            <div class="text-danger" style="font-size: 0.9rem;">Please select an odd number.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool inviteLinkCreated = false;
+    private string inviteLink = string.Empty;
+    private Player Player1;
+    private HttpStatusCode BotResult;
+    string errorMessage = string.Empty;
+    private string sessionId;
+    private int numberOfRounds = 3;
+    private bool isEvenNumber = false;
+    private bool playerJoined;
+    private bool invited;
+    private bool isCircuitOpen = false;
+    public string Email { get; set; }
+    public EmailData Data { get; set; } = new EmailData();
+
+    private SessionStatus status;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GameSession.Player.Choice = null;
+        Player1 = GameSession.Player;
+        sessionId = Guid.NewGuid().ToString();
+        var uri = new Uri(Navigation.Uri);
+        GameSession.SessionId = sessionId;
+        GameSession.IsInvited = false;
+        Connection.On<SessionStatus>("SendStatus", (session) =>
+        {
+            status = session;
+            RefreshStatus();
+            StateHasChanged();
+        });
+        await _sessionService.CreateSession(sessionId, Player1);
+        if (Connection.State == HubConnectionState.Connected)
+        {
+            await Connection.InvokeAsync("JoinSession", sessionId);
+        }
+        else
+        {
+            await Connection.StartAsync();
+            await Connection.InvokeAsync("JoinSession", sessionId);
+        }
+        await CheckBotAPI();
+    }
+
+    private void InviteFriend()
+    {
+        inviteLink = $"{Navigation.BaseUri}join/{sessionId}";
+        inviteLinkCreated = true;
+        invited = true;
+        StateHasChanged();
+    }
+
+    private async Task CheckBotAPI()
+    {
+        BotResult = await _botService.CheckBotAPI();
+        BotService service = _botService as BotService;
+        if (service.IsCircuitOpen)
+        {
+            isCircuitOpen = true;
+            StateHasChanged();
+        }
+        else
+        {
+            isCircuitOpen = false;
+
+        }
+        errorMessage = service.ErrorMessage;
+
+    }
+    private void RefreshStatus()
+    {
+        switch (status.State)
+        {
+            case SessionState.Created:
+            case SessionState.WaitingForPlayer:
+                playerJoined = false;
+                break;
+            case SessionState.WaitingForMoves:
+                playerJoined = true;
+                break;
+        }
+    }
+
+    private async Task AddBot()
+    {
+        await CheckBotAPI();
+        if (BotResult == HttpStatusCode.OK)
+        {
+            await _sessionService.InviteBot(sessionId);
+
+            invited = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateGameSession()
+    {
+        await _sessionService.SetNumberOfRounds(sessionId, numberOfRounds);
+        Navigation.NavigateTo($"/gamepage");
+    }
+
+    private async Task CopyInviteLink()
+    {
+        await JS.InvokeVoidAsync("clipboardCopy", inviteLink);
+    }
+    public async void SendInvite()
+    {
+        Data.PlayerName = Player1.Name;
+        Data.Email = Email;
+        Data.InviteLink = inviteLink;
+        var responseCode = await _inviteService.SendInvite(Data);
+        if (responseCode == 0)
+        {
+            ResetForm();
+
+        }
+    }
+    public void ResetForm()
+    {
+        Data = new EmailData();
+    }
+    private void ValidateOddInput(ChangeEventArgs e)
+    {
+        var value = Convert.ToInt32(e.Value);
+
+        if (value % 2 == 0)
+        {
+            isEvenNumber = true;
+        }
+        else
+        {
+            isEvenNumber = false;
+            numberOfRounds = value;
+        }
+    }
+}
+<script>
+    window.clipboardCopy = function (text) {
+        navigator.clipboard.writeText(text).then(function () {
+            alert("Copied to clipboard!");
+        })
+            .catch(function (error) {
+                alert("Error copying text: " + error);
+            });
+    }
+</script>
