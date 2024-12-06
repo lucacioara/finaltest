@@ -1,0 +1,18 @@
+{
+  "routes": [
+    {
+      "route": "/join/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/createsession",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    }
+  ]
+}

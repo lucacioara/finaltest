@@ -1,0 +1,118 @@
+name: Images Upload to GHCR
+
+on:
+  create:
+    branches:
+     - master
+
+jobs:
+  transfer-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set repository owner
+        run: |
+          
+          echo REPO_OWNER_LOWERCASE=$(echo "${GITHUB_REPOSITORY@L}" | cut -d'/' -f1) >> $GITHUB_ENV
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Push images for module 1 - bot
+        uses: docker/build-push-action@v6
+        with:
+          context: module-1-azure-architecture-introduction/src/Exercise_1/BotAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/botapi-rockpaperscissors:latest"
+          
+      - name: Push images for module 1 exercise 1 - game
+        uses: docker/build-push-action@v6
+        with:
+          context: module-1-azure-architecture-introduction/src/Exercise_1/WebAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/gameapi-rockpaperscissors:latest"
+      
+      - name: Push images for module 2 exercise 1 - game
+        uses: docker/build-push-action@v6
+        with:
+          context: module-2-external-communication/src/Exercise_1/WebAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/gameapi-rockpaperscissors:module2-ex1"
+
+      - name: Push images for module 2 exercise 1 - bot
+        uses: docker/build-push-action@v6
+        with:
+          context: module-2-external-communication/src/Exercise_1/BotAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/botapi-rockpaperscissors:module2-ex1"
+          
+    
+
+      - name: Push images for module 2 exercise 2 - bot
+        uses: docker/build-push-action@v6
+        with:
+          context: module-2-external-communication/src/Exercise_2/BotAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/botapi-rockpaperscissors:module2-ex2"
+          
+      - name: Push images for module 2 exercise 2 - game
+        uses: docker/build-push-action@v6
+        with:
+          context: module-2-external-communication/src/Exercise_2/WebAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/gameapi-rockpaperscissors:module2-ex2"
+
+      - name: Push images for module 4 exercise 1 - bot
+        uses: docker/build-push-action@v6
+        with:
+          context: module-4-caching-strategies/Exercise_1/BotAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/botapi-rockpaperscissors:module4-ex1"
+          
+      - name: Push images for module 4 exercise 1 - game
+        uses: docker/build-push-action@v6
+        with:
+          context: module-4-caching-strategies/Exercise_1/WebAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/gameapi-rockpaperscissors:module4-ex1"
+
+      - name: Push images for module 4 exercise 1 - stats
+        uses: docker/build-push-action@v6
+        with:
+          context: module-4-caching-strategies/Exercise_1/StatsAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/statsapi-rockpaperscissors:module4-ex1"
+
+      - name: Push images for module 7 exercise 1 - bot
+        uses: docker/build-push-action@v6
+        with:
+          context: module-7-message-brokers/Exercise_1/BotAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/botapi-rockpaperscissors:module7-ex1"
+          
+      - name: Push images for module 7 exercise 1 - stats
+        uses: docker/build-push-action@v6
+        with:
+          context: module-7-message-brokers/Exercise_1/StatsAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/statsapi-rockpaperscissors:module7-ex1"
+          
+      - name: Push images for module 7 exercise 1 - game
+        uses: docker/build-push-action@v6
+        with:
+          context: module-7-message-brokers/Exercise_1/WebAPI
+          push: true
+          tags: "ghcr.io/${{ env.REPO_OWNER_LOWERCASE }}/gameapi-rockpaperscissors:module7-ex1"

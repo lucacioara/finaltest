@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "route": "/join/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    }
+  ]
+}

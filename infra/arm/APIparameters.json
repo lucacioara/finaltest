@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "containerapps_bot_api_name": {
+            "value": null
+        },
+        "containerapps_game_api_name": {
+            "value": null
+        },
+        "managedEnvironments_env_name": {
+            "value": null
+        },
+        "location": {
+            "value": null
+        }
+    }
+}

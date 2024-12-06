@@ -1,0 +1,1502 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "region1_containerapps_bot_api_name": {
+            "type": "String"
+        },
+        "region1_containerapps_game_api_name": {
+            "type": "String"
+        },
+        "region1_managedEnvironments_env_name": {
+            "type": "String"
+        },
+        "location": {
+            "type": "String"
+        },
+        "region2_containerapps_bot_api_name": {
+            "type": "String"
+        },
+        "region2_containerapps_game_api_name": {
+            "type": "String"
+        },
+        "region2_managedEnvironments_env_name": {
+            "type": "String"
+        },
+        "location2": {
+            "type": "String"
+        },
+        "APIResourceGroup": {
+            "type": "String"
+        },
+        "APIResourceGroup2": {
+            "type": "String"
+        },
+        "NetworkResourceGroup": {
+            "type": "String"
+        },
+        "DBResourceGroup": {
+            "type": "String"
+        },
+        "databaseAccounts_db_name": {
+            "type": "String"
+        },
+        "profiles_frontdoor_name": {
+            "type": "String"
+        },
+        "staticSites_test_web_rps_we_name": {
+            "type": "String"
+        },
+        "RepositoryUrl": {
+            "type": "String"
+        },
+        "Branch": {
+            "type": "String"
+        },
+        "RepositoryToken": {
+            "type": "String"
+        },
+        "appLocation": {
+            "defaultValue": "/module-1-azure-architecture-introduction/src/Exercise_1/RockPaperScissors",
+            "type": "String"
+        },
+        "apiLocation": {
+            "defaultValue": "/module-1-azure-architecture-introduction/src/Exercise_1/RockPaperScissorsAPI",
+            "type": "String"
+        },
+        "appArtifactLocation": {
+            "defaultValue": "wwwroot",
+            "type": "String"
+        },
+        "endpointbot": {
+            "type": "String"
+        },
+        "endpointgame": {
+            "type": "String"
+        },
+        "botgroup": {
+            "type": "String"
+        },
+        "gamegroup": {
+            "type": "String"
+        },
+        "gameorigin1": {
+            "type": "String"
+        },
+        "gameorigin2": {
+            "type": "String"
+        },
+        "botorigin1": {
+            "type": "String"
+        },
+        "botorigin2": {
+            "type": "String"
+        },
+        "gameroute": {
+            "defaultValue": "gameroute",
+            "type": "String"
+        },
+        "botroute": {
+            "defaultValue": "botroute",
+            "type": "String"
+        },
+        "virtualNetworks_vnet_name": {
+            "type": "String"
+        },
+        "vnet_subnet_name": {
+            "defaultValue": "default",
+            "type": "String"
+        },
+        "environment-subnet-name": {
+            "type": "String"
+        },
+        "githubowner": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "UpdateEnvironments": "UpdateEnvironments",
+        "UpdateEnvironments2": "UpdateEnvironments2",
+        "DeployWeb": "DeployWeb",
+        "Group1": "Group1",
+        "Group2": "Group2",
+        "Network": "Network",
+        "Database": "Database"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('APIResourceGroup')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('APIResourceGroup2')]",
+            "location": "[parameters('location2')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('NetworkResourceGroup')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('DBResourceGroup')]",
+            "location": "[parameters('location')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('Group1')]",
+            "resourceGroup": "[parameters('APIResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('APIResourceGroup'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "githubowner": {
+                        "Value": "[parameters('githubowner')]"
+                    },
+                    "environment-subnet-name": {
+                        "Value": "[parameters('environment-subnet-name')]"
+                    },
+                    "vnet_subnet_name": {
+                        "Value": "[parameters('vnet_subnet_name')]"
+                    },
+                    "virtualNetworks_vnet_name": {
+                        "Value": "[parameters('virtualNetworks_vnet_name')]"
+                    },
+                    "RepositoryUrl": {
+                        "Value": "[parameters('RepositoryUrl')]"
+                    },
+                    "Branch": {
+                        "Value": "[parameters('Branch')]"
+                    },
+                    "staticSites_test_web_rps_we_name": {
+                        "Value": "[parameters('staticSites_test_web_rps_we_name')]"
+                    },
+                    "region1_containerapps_bot_api_name": {
+                        "Value": "[parameters('region1_containerapps_bot_api_name')]"
+                    },
+                    "region1_containerapps_game_api_name": {
+                        "Value": "[parameters('region1_containerapps_game_api_name')]"
+                    },
+                    "region1_managedEnvironments_env_name": {
+                        "Value": "[parameters('region1_managedEnvironments_env_name')]"
+                    },
+                    "location": {
+                        "Value": "[parameters('location')]"
+                    },
+                    "RepositoryToken": {
+                        "Value": "[parameters('RepositoryToken')]"
+                    },
+                    "appLocation": {
+                        "Value": "[parameters('appLocation')]"
+                    },
+                    "apiLocation": {
+                        "Value": "[parameters('apiLocation')]"
+                    },
+                    "appArtifactLocation": {
+                        "Value": "[parameters('appArtifactLocation')]"
+                    },
+                    "NetworkResourceGroup": {
+                        "Value": "[parameters('NetworkResourceGroup')]"
+                    },
+                    "endpointbot": {
+                        "Value": "[parameters('endpointbot')]"
+                    },
+                    "endpointgame": {
+                        "Value": "[parameters('endpointgame')]"
+                    },
+                    "profiles_frontdoor_name": {
+                        "Value": "[parameters('profiles_frontdoor_name')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "githubowner": {
+                            "type": "String"
+                        },
+                        "environment-subnet-name": {
+                            "type": "String"
+                        },
+                        "vnet_subnet_name": {
+                            "type": "String"
+                        },
+                        "virtualNetworks_vnet_name": {
+                            "type": "String"
+                        },
+                        "RepositoryUrl": {
+                            "type": "String"
+                        },
+                        "Branch": {
+                            "type": "String"
+                        },
+                        "staticSites_test_web_rps_we_name": {
+                            "type": "String"
+                        },
+                        "region1_containerapps_bot_api_name": {
+                            "type": "String"
+                        },
+                        "region1_containerapps_game_api_name": {
+                            "type": "String"
+                        },
+                        "region1_managedEnvironments_env_name": {
+                            "type": "String"
+                        },
+                        "location": {
+                            "type": "String"
+                        },
+                        "RepositoryToken": {
+                            "type": "String"
+                        },
+                        "appLocation": {
+                            "type": "String"
+                        },
+                        "apiLocation": {
+                            "type": "String"
+                        },
+                        "appArtifactLocation": {
+                            "type": "String"
+                        },
+                        "NetworkResourceGroup": {
+                            "type": "String"
+                        },
+                        "endpointbot": {
+                            "type": "String"
+                        },
+                        "endpointgame": {
+                            "type": "String"
+                        },
+                        "profiles_frontdoor_name": {
+                            "type": "String"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('virtualNetworks_vnet_name')]",
+                            "location": "[parameters('location')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "10.0.0.0/16"
+                                    ]
+                                },
+                                "subnets": [
+                                    {
+                                        "name": "[parameters('vnet_subnet_name')]",
+                                        "properties": {
+                                            "addressPrefix": "10.0.0.0/24",
+                                            "delegations": [],
+                                            "privateEndpointNetworkPolicies": "Disabled",
+                                            "privateLinkServiceNetworkPolicies": "Enabled"
+                                        },
+                                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                                    },
+                                    {
+                                        "name": "[parameters('environment-subnet-name')]",
+                                        "properties": {
+                                            "addressPrefix": "10.0.1.0/24",
+                                            "delegations": [
+                                                {
+                                                    "name": "0",
+                                                    "id": "[concat(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name')), '/delegations/0')]",
+                                                    "properties": {
+                                                        "serviceName": "Microsoft.App/environments"
+                                                    },
+                                                    "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+                                                }
+                                            ],
+                                            "privateEndpointNetworkPolicies": "Disabled",
+                                            "privateLinkServiceNetworkPolicies": "Enabled"
+                                        },
+                                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                                    }
+                                ],
+                                "virtualNetworkPeerings": [],
+                                "enableDdosProtection": false
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2024-01-01",
+                            "name": "[concat(parameters('virtualNetworks_vnet_name'), '/' ,parameters('environment-subnet-name'))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_name'))]"
+                            ],
+                            "properties": {
+                                "addressPrefix": "10.0.1.0/24",
+                                "delegations": [
+                                    {
+                                        "name": "0",
+                                        "id": "[concat(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), 'environment-subnet-name'), '/delegations/0')]",
+                                        "properties": {
+                                            "serviceName": "Microsoft.App/environments"
+                                        },
+                                        "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+                                    }
+                                ],
+                                "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks/subnets",
+                            "apiVersion": "2024-01-01",
+                            "name": "[concat(parameters('virtualNetworks_vnet_name'), '/', parameters('vnet_subnet_name'))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_name'))]"
+                            ],
+                            "properties": {
+                                "addressPrefix": "10.0.0.0/24",
+                                "delegations": [],
+                                "privateEndpointNetworkPolicies": "Disabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.App/managedEnvironments",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region1_managedEnvironments_env_name')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name'))]"
+                            ],
+                            "properties": {
+                                "vnetConfiguration": {
+                                    "internal": false,
+                                    "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name'))]"
+                                },
+                                "zoneRedundant": false,
+                                "kedaConfiguration": {},
+                                "daprConfiguration": {},
+                                "customDomainConfiguration": {},
+                                "workloadProfiles": [
+                                    {
+                                        "workloadProfileType": "Consumption",
+                                        "name": "Consumption"
+                                    }
+                                ],
+                                "peerAuthentication": {
+                                    "mtls": {
+                                        "enabled": false
+                                    }
+                                },
+                                "peerTrafficConfiguration": {
+                                    "encryption": {
+                                        "enabled": false
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.App/containerapps",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region1_containerapps_bot_api_name')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]"
+                            ],
+                            "identity": {
+                                "type": "None"
+                            },
+                            "properties": {
+                                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]",
+                                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]",
+                                "workloadProfileName": "Consumption",
+                                "configuration": {
+                                    "activeRevisionsMode": "Single",
+                                    "registries": [
+                                        {
+                                            "server": "ghcr.io",
+                                            "username": "[parameters('githubowner')]"
+                                        }
+                                    ],
+                                    "ingress": {
+                                        "external": true,
+                                        "targetPort": 8080,
+                                        "exposedPort": 0,
+                                        "transport": "Auto",
+                                        "traffic": [
+                                            {
+                                                "weight": 100,
+                                                "latestRevision": true
+                                            }
+                                        ],
+                                        "allowInsecure": false,
+                                        "corsPolicy": {
+                                            "allowedOrigins": [
+                                                "*"
+                                            ],
+                                            "allowedHeaders": [
+                                                "*"
+                                            ],
+                                            "maxAge": 0,
+                                            "allowCredentials": false
+                                        }
+                                    },
+                                    "dapr": {
+                                        "enabled": true,
+                                        "appId": "botapi",
+                                        "appProtocol": "http",
+                                        "appPort": 8080,
+                                        "logLevel": "info",
+                                        "enableApiLogging": false
+                                    },
+                                    "maxInactiveRevisions": 100
+                                },
+                                "template": {
+                                    "containers": [
+                                        {
+                                            "image": "[concat(parameters('githubowner'), '/botapi-rockpaperscissors:latest')]",
+                                            "name": "[parameters('region1_containerapps_bot_api_name')]",
+                                            "resources": {
+                                                "cpu": 0.5,
+                                                "memory": "1Gi"
+                                            }
+                                        }
+                                    ],
+                                    "scale": {
+                                        "maxReplicas": 1
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.App/containerapps",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region1_containerapps_game_api_name')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]"
+                            ],
+                            "identity": {
+                                "type": "None"
+                            },
+                            "properties": {
+                                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]",
+                                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region1_managedEnvironments_env_name'))]",
+                                "workloadProfileName": "Consumption",
+                                "configuration": {
+                                    "activeRevisionsMode": "Single",
+                                    "registries": [
+                                        {
+                                            "server": "ghcr.io",
+                                            "username": "[parameters('githubowner')]"
+                                        }
+                                    ],
+                                    "ingress": {
+                                        "external": true,
+                                        "targetPort": 8080,
+                                        "exposedPort": 0,
+                                        "transport": "Auto",
+                                        "traffic": [
+                                            {
+                                                "weight": 100,
+                                                "latestRevision": true
+                                            }
+                                        ],
+                                        "allowInsecure": false,
+                                        "corsPolicy": {
+                                            "allowedOrigins": [
+                                                "*"
+                                            ],
+                                            "allowedHeaders": [
+                                                "*"
+                                            ],
+                                            "maxAge": 0,
+                                            "allowCredentials": false
+                                        }
+                                    },
+                                    "dapr": {
+                                        "enabled": true,
+                                        "appId": "gameapi",
+                                        "appProtocol": "http",
+                                        "appPort": 8080,
+                                        "logLevel": "info",
+                                        "enableApiLogging": false
+                                    },
+                                    "maxInactiveRevisions": 100
+                                },
+                                "template": {
+                                    "containers": [
+                                        {
+                                            "image": "[concat(parameters('githubowner'), '/gameapi-rockpaperscissors:latest')]",
+                                            "name": "[parameters('region1_containerapps_game_api_name')]",
+                                            "resources": {
+                                                "cpu": 0.5,
+                                                "memory": "1Gi"
+                                            }
+                                        }
+                                    ],
+                                    "scale": {
+                                        "maxReplicas": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('Group2')]",
+            "resourceGroup": "[parameters('APIResourceGroup2')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('APIResourceGroup2'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "githubowner": {
+                        "Value": "[parameters('githubowner')]"
+                    },
+                    "region2_containerapps_bot_api_name": {
+                        "Value": "[parameters('region2_containerapps_bot_api_name')]"
+                    },
+                    "region2_containerapps_game_api_name": {
+                        "Value": "[parameters('region2_containerapps_game_api_name')]"
+                    },
+                    "region2_managedEnvironments_env_name": {
+                        "Value": "[parameters('region2_managedEnvironments_env_name')]"
+                    },
+                    "location2": {
+                        "Value": "[parameters('location2')]"
+                    },
+                    "endpointbot": {
+                        "Value": "[parameters('endpointbot')]"
+                    },
+                    "endpointgame": {
+                        "Value": "[parameters('endpointgame')]"
+                    },
+                    "profiles_frontdoor_name": {
+                        "Value": "[parameters('profiles_frontdoor_name')]"
+                    },
+                    "NetworkResourceGroup": {
+                        "Value": "[parameters('NetworkResourceGroup')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "githubowner": {
+                            "type": "String"
+                        },
+                        "region2_containerapps_bot_api_name": {
+                            "type": "String"
+                        },
+                        "region2_containerapps_game_api_name": {
+                            "type": "String"
+                        },
+                        "region2_managedEnvironments_env_name": {
+                            "type": "String"
+                        },
+                        "location2": {
+                            "type": "String"
+                        },
+                        "endpointbot": {
+                            "type": "String"
+                        },
+                        "endpointgame": {
+                            "type": "String"
+                        },
+                        "profiles_frontdoor_name": {
+                            "type": "String"
+                        },
+                        "NetworkResourceGroup": {
+                            "type": "String"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.App/managedEnvironments",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region2_managedEnvironments_env_name')]",
+                            "location": "[parameters('location2')]",
+                            "properties": {
+                                "zoneRedundant": false,
+                                "kedaConfiguration": {},
+                                "daprConfiguration": {},
+                                "customDomainConfiguration": {},
+                                "workloadProfiles": [
+                                    {
+                                        "workloadProfileType": "Consumption",
+                                        "name": "Consumption"
+                                    }
+                                ],
+                                "peerAuthentication": {
+                                    "mtls": {
+                                        "enabled": false
+                                    }
+                                },
+                                "peerTrafficConfiguration": {
+                                    "encryption": {
+                                        "enabled": false
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.App/containerapps",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region2_containerapps_bot_api_name')]",
+                            "location": "[parameters('location2')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]"
+                            ],
+                            "identity": {
+                                "type": "None"
+                            },
+                            "properties": {
+                                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]",
+                                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]",
+                                "workloadProfileName": "Consumption",
+                                "configuration": {
+                                    "activeRevisionsMode": "Single",
+                                    "registries": [
+                                        {
+                                            "server": "ghcr.io",
+                                            "username": "[parameters('githubowner')]"
+                                        }
+                                    ],
+                                    "ingress": {
+                                        "external": true,
+                                        "targetPort": 8080,
+                                        "exposedPort": 0,
+                                        "transport": "Auto",
+                                        "traffic": [
+                                            {
+                                                "weight": 100,
+                                                "latestRevision": true
+                                            }
+                                        ],
+                                        "allowInsecure": false,
+                                        "corsPolicy": {
+                                            "allowedOrigins": [
+                                                "*"
+                                            ],
+                                            "allowedHeaders": [
+                                                "*"
+                                            ],
+                                            "maxAge": 0,
+                                            "allowCredentials": false
+                                        }
+                                    },
+                                    "dapr": {
+                                        "enabled": true,
+                                        "appId": "botapi",
+                                        "appProtocol": "http",
+                                        "appPort": 8080,
+                                        "logLevel": "info",
+                                        "enableApiLogging": false
+                                    },
+                                    "maxInactiveRevisions": 100
+                                },
+                                "template": {
+                                    "containers": [
+                                        {
+                                            "image": "[concat(parameters('githubowner'), '/botapi-rockpaperscissors:latest')]",
+                                            "name": "[parameters('region2_containerapps_bot_api_name')]",
+                                            "resources": {
+                                                "cpu": 0.5,
+                                                "memory": "1Gi"
+                                            }
+                                        }
+                                    ],
+                                    "scale": {
+                                        "maxReplicas": 1
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.App/containerapps",
+                            "apiVersion": "2024-03-01",
+                            "name": "[parameters('region2_containerapps_game_api_name')]",
+                            "location": "[parameters('location2')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]"
+                            ],
+                            "identity": {
+                                "type": "None"
+                            },
+                            "properties": {
+                                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]",
+                                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('region2_managedEnvironments_env_name'))]",
+                                "workloadProfileName": "Consumption",
+                                "configuration": {
+                                    "activeRevisionsMode": "Single",
+                                    "registries": [
+                                        {
+                                            "server": "ghcr.io",
+                                            "username": "[parameters('githubowner')]"
+                                        }
+                                    ],
+                                    "ingress": {
+                                        "external": true,
+                                        "targetPort": 8080,
+                                        "exposedPort": 0,
+                                        "transport": "Auto",
+                                        "traffic": [
+                                            {
+                                                "weight": 100,
+                                                "latestRevision": true
+                                            }
+                                        ],
+                                        "allowInsecure": false,
+                                        "corsPolicy": {
+                                            "allowedOrigins": [
+                                                "*"
+                                            ],
+                                            "allowedHeaders": [
+                                                "*"
+                                            ],
+                                            "maxAge": 0,
+                                            "allowCredentials": false
+                                        }
+                                    },
+                                    "dapr": {
+                                        "enabled": true,
+                                        "appId": "gameapi",
+                                        "appProtocol": "http",
+                                        "appPort": 8080,
+                                        "logLevel": "info",
+                                        "enableApiLogging": false
+                                    },
+                                    "maxInactiveRevisions": 100
+                                },
+                                "template": {
+                                    "containers": [
+                                        {
+                                            "image": "[concat(parameters('githubowner'), '/gameapi-rockpaperscissors:latest')]",
+                                            "name": "[parameters('region2_containerapps_game_api_name')]",
+                                            "resources": {
+                                                "cpu": 0.5,
+                                                "memory": "1Gi"
+                                            }
+                                        }
+                                    ],
+                                    "scale": {
+                                        "maxReplicas": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('Database')]",
+            "resourceGroup": "[parameters('DBResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('DBResourceGroup'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "databaseAccounts_db_name": {
+                        "value": "[parameters('databaseAccounts_db_name')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "databaseAccounts_db_name": {
+                            "type": "String"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts",
+                            "apiVersion": "2024-05-15",
+                            "name": "[parameters('databaseAccounts_db_name')]",
+                            "location": "North Europe",
+                            "kind": "GlobalDocumentDB",
+                            "identity": {
+                                "type": "None"
+                            },
+                            "properties": {
+                                "publicNetworkAccess": "Enabled",
+                                "enableAutomaticFailover": false,
+                                "enableMultipleWriteLocations": false,
+                                "isVirtualNetworkFilterEnabled": false,
+                                "virtualNetworkRules": [],
+                                "disableKeyBasedMetadataWriteAccess": false,
+                                "enableFreeTier": false,
+                                "enableAnalyticalStorage": false,
+                                "analyticalStorageConfiguration": {
+                                    "schemaType": "WellDefined"
+                                },
+                                "databaseAccountOfferType": "Standard",
+                                "defaultIdentity": "FirstPartyIdentity",
+                                "networkAclBypass": "None",
+                                "disableLocalAuth": false,
+                                "enablePartitionMerge": false,
+                                "enableBurstCapacity": false,
+                                "minimalTlsVersion": "Tls12",
+                                "consistencyPolicy": {
+                                    "defaultConsistencyLevel": "Session",
+                                    "maxIntervalInSeconds": 5,
+                                    "maxStalenessPrefix": 100
+                                },
+                                "locations": [
+                                    {
+                                        "locationName": "North Europe",
+                                        "failoverPriority": 0,
+                                        "isZoneRedundant": false
+                                    }
+                                ],
+                                "cors": [],
+                                "capabilities": [],
+                                "ipRules": [],
+                                "backupPolicy": {
+                                    "type": "Periodic",
+                                    "periodicModeProperties": {
+                                        "backupIntervalInMinutes": 240,
+                                        "backupRetentionIntervalInHours": 8,
+                                        "backupStorageRedundancy": "Geo"
+                                    }
+                                },
+                                "networkAclBypassResourceIds": []
+                            }
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+                            "apiVersion": "2024-05-15",
+                            "name": "[concat(parameters('databaseAccounts_db_name'), '/rockpaperscissors')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                            ],
+                            "properties": {
+                                "resource": {
+                                    "id": "rockpaperscissors"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions",
+                            "apiVersion": "2024-05-15",
+                            "name": "[concat(parameters('databaseAccounts_db_name'), '/00000000-0000-0000-0000-000000000001')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                            ],
+                            "properties": {
+                                "roleName": "Cosmos DB Built-in Data Reader",
+                                "type": "BuiltInRole",
+                                "assignableScopes": [
+                                    "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                                ],
+                                "permissions": [
+                                    {
+                                        "dataActions": [
+                                            "Microsoft.DocumentDB/databaseAccounts/readMetadata",
+                                            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/executeQuery",
+                                            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/readChangeFeed",
+                                            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/read"
+                                        ],
+                                        "notDataActions": []
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlRoleDefinitions",
+                            "apiVersion": "2024-05-15",
+                            "name": "[concat(parameters('databaseAccounts_db_name'), '/00000000-0000-0000-0000-000000000002')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                            ],
+                            "properties": {
+                                "roleName": "Cosmos DB Built-in Data Contributor",
+                                "type": "BuiltInRole",
+                                "assignableScopes": [
+                                    "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                                ],
+                                "permissions": [
+                                    {
+                                        "dataActions": [
+                                            "Microsoft.DocumentDB/databaseAccounts/readMetadata",
+                                            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*",
+                                            "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*"
+                                        ],
+                                        "notDataActions": []
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+                            "apiVersion": "2024-05-15",
+                            "name": "[concat(parameters('databaseAccounts_db_name'), '/rockpaperscissors/actors')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('databaseAccounts_db_name'), 'rockpaperscissors')]",
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                            ],
+                            "properties": {
+                                "resource": {
+                                    "id": "actors",
+                                    "indexingPolicy": {
+                                        "indexingMode": "consistent",
+                                        "automatic": true,
+                                        "includedPaths": [
+                                            {
+                                                "path": "/*"
+                                            }
+                                        ],
+                                        "excludedPaths": [
+                                            {
+                                                "path": "/\"_etag\"/?"
+                                            }
+                                        ]
+                                    },
+                                    "partitionKey": {
+                                        "paths": [
+                                            "/partitionKey"
+                                        ],
+                                        "kind": "Hash"
+                                    },
+                                    "uniqueKeyPolicy": {
+                                        "uniqueKeys": []
+                                    },
+                                    "conflictResolutionPolicy": {
+                                        "mode": "LastWriterWins",
+                                        "conflictResolutionPath": "/_ts"
+                                    },
+                                    "computedProperties": []
+                                }
+                            }
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings",
+                            "apiVersion": "2024-05-15",
+                            "name": "[concat(parameters('databaseAccounts_db_name'), '/rockpaperscissors/actors/default')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers', parameters('databaseAccounts_db_name'), 'rockpaperscissors', 'actors')]",
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('databaseAccounts_db_name'), 'rockpaperscissors')]",
+                                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('databaseAccounts_db_name'))]"
+                            ],
+                            "properties": {
+                                "resource": {
+                                    "throughput": 400
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('Network')]",
+            "resourceGroup": "[parameters('NetworkResourceGroup')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('NetworkResourceGroup'))]",
+                "[resourceId(subscription().subscriptionId, parameters('APIResourceGroup'), 'Microsoft.Resources/deployments', variables('Group1'))]",
+                "[resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'),'Microsoft.Resources/deployments', variables('Group2'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+
+                    "profiles_frontdoor_name": {
+                        "Value": "[parameters('profiles_frontdoor_name')]"
+                    },
+                    "endpointbot": {
+                        "Value": "[parameters('endpointbot')]"
+                    },
+                    "endpointgame": {
+                        "Value": "[parameters('endpointgame')]"
+                    },
+                    "botgroup": {
+                        "Value": "[parameters('botgroup')]"
+                    },
+                    "gamegroup": {
+                        "Value": "[parameters('gamegroup')]"
+                    },
+                    "gameorigin1": {
+                        "Value": "[parameters('gameorigin1')]"
+                    },
+                    "gameorigin2": {
+                        "Value": "[parameters('gameorigin2')]"
+                    },
+                    "botorigin1": {
+                        "Value": "[parameters('botorigin1')]"
+                    },
+                    "botorigin2": {
+                        "Value": "[parameters('botorigin2')]"
+                    },
+                    "gameroute": {
+                        "Value": "[parameters('gameroute')]"
+                    },
+                    "botroute": {
+                        "Value": "[parameters('botroute')]"
+                    },
+                    "region1_containerapps_bot_api_name": {
+                        "Value": "[parameters('region1_containerapps_bot_api_name')]"
+                    },
+                    "region1_containerapps_game_api_name": {
+                        "Value": "[parameters('region1_containerapps_game_api_name')]"
+                    },
+                    "region2_containerapps_game_api_name": {
+                        "Value": "[parameters('region2_containerapps_game_api_name')]"
+                    },
+                    "region2_containerapps_bot_api_name": {
+                        "Value": "[parameters('region2_containerapps_bot_api_name')]"
+                    },
+                    "APIResourceGroup": {
+                        "Value": "[parameters('APIResourceGroup')]"
+                    },
+                    "APIResourceGroup2": {
+                        "Value": "[parameters('APIResourceGroup2')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "profiles_frontdoor_name": {
+                            "type": "String"
+                        },
+                        "endpointbot": {
+                            "type": "String"
+                        },
+                        "endpointgame": {
+                            "type": "String"
+                        },
+                        "botgroup": {
+                            "type": "String"
+                        },
+                        "gamegroup": {
+                            "type": "String"
+                        },
+                        "gameorigin1": {
+                            "type": "String"
+                        },
+                        "gameorigin2": {
+                            "type": "String"
+                        },
+                        "botorigin1": {
+                            "type": "String"
+                        },
+                        "botorigin2": {
+                            "type": "String"
+                        },
+                        "gameroute": {
+                            "type": "String"
+                        },
+                        "botroute": {
+                            "type": "String"
+                        },
+                        "region1_containerapps_bot_api_name": {
+                            "type": "String"
+                        },
+                        "region1_containerapps_game_api_name": {
+                            "type": "String"
+                        },
+                        "region2_containerapps_game_api_name": {
+                            "type": "String"
+                        },
+                        "region2_containerapps_bot_api_name": {
+                            "type": "String"
+                        },
+                        "APIResourceGroup": {
+                            "type": "String"
+                        },
+                        "APIResourceGroup2": {
+                            "type": "String"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Cdn/profiles",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[parameters('profiles_frontdoor_name')]",
+                            "location": "Global",
+                            "sku": {
+                                "name": "Premium_AzureFrontDoor"
+                            },
+                            "kind": "frontdoor",
+                            "properties": {
+                                "originResponseTimeoutSeconds": 16
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/afdendpoints",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}' , parameters('endpointbot')))]",
+                            "location": "Global",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "enabledState": "Enabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/afdendpoints",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}' , parameters('endpointgame')))]",
+                            "location": "Global",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "enabledState": "Enabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}' , parameters('gamegroup')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "loadBalancingSettings": {
+                                    "sampleSize": 4,
+                                    "successfulSamplesRequired": 3,
+                                    "additionalLatencyInMilliseconds": 50
+                                },
+                                "healthProbeSettings": {
+                                    "probePath": "/",
+                                    "probeRequestType": "GET",
+                                    "probeProtocol": "Https",
+                                    "probeIntervalInSeconds": 5
+                                },
+                                "sessionAffinityState": "Disabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}' , parameters('botgroup')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "loadBalancingSettings": {
+                                    "sampleSize": 4,
+                                    "successfulSamplesRequired": 3,
+                                    "additionalLatencyInMilliseconds": 50
+                                },
+                                "healthProbeSettings": {
+                                    "probePath": "/",
+                                    "probeRequestType": "GET",
+                                    "probeProtocol": "Https",
+                                    "probeIntervalInSeconds": 5
+                                },
+                                "sessionAffinityState": "Disabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('gamegroup') , parameters('gameorigin1')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('gamegroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "hostName": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup'), 'Microsoft.App/containerApps', parameters('region1_containerapps_game_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "httpPort": 8080,
+                                "httpsPort": 443,
+                                "originHostHeader": "[reference(resourceId(subscription().subscriptionId,parameters('APIResourceGroup'), 'Microsoft.App/containerApps', parameters('region1_containerapps_game_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "priority": 1,
+                                "weight": 1000,
+                                "enabledState": "Enabled",
+                                "enforceCertificateNameCheck": true
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('botgroup') , parameters('botorigin1')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('botgroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "hostName": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup'), 'Microsoft.App/containerApps', parameters('region1_containerapps_bot_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "httpPort": 8080,
+                                "httpsPort": 443,
+                                "originHostHeader": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup'), 'Microsoft.App/containerApps', parameters('region1_containerapps_bot_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "priority": 1,
+                                "weight": 1000,
+                                "enabledState": "Enabled",
+                                "enforceCertificateNameCheck": true
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('gamegroup') , parameters('gameorigin2')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('gamegroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "hostName": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'), 'Microsoft.App/containerApps', parameters('region2_containerapps_game_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "httpPort": 8080,
+                                "httpsPort": 443,
+                                "originHostHeader": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'), 'Microsoft.App/containerApps', parameters('region2_containerapps_game_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "priority": 2,
+                                "weight": 1000,
+                                "enabledState": "Enabled",
+                                "enforceCertificateNameCheck": true
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/origingroups/origins",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('botgroup') , parameters('botorigin2')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('botgroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]"
+                            ],
+                            "properties": {
+                                "hostName": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'), 'Microsoft.App/containerApps', parameters('region2_containerapps_bot_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "httpPort": 8080,
+                                "httpsPort": 443,
+                                "originHostHeader": "[reference(resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'), 'Microsoft.App/containerApps', parameters('region2_containerapps_bot_api_name')), '2024-03-01').latestRevisionFqdn]",
+                                "priority": 2,
+                                "weight": 1000,
+                                "enabledState": "Enabled",
+                                "enforceCertificateNameCheck": true
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/afdendpoints/routes",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('endpointbot') , parameters('botroute')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/afdendpoints', parameters('profiles_frontdoor_name'), parameters('endpointbot'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('botgroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups/origins', parameters('profiles_frontdoor_name'), parameters('botgroup'), parameters('botorigin1'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups/origins', parameters('profiles_frontdoor_name'), parameters('botgroup'), parameters('botorigin2'))]"
+                            ],
+                            "properties": {
+                                "customDomains": [],
+                                "grpcState": "Disabled",
+                                "originGroup": {
+                                    "id": "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('botgroup'))]"
+                                },
+                                "ruleSets": [],
+                                "supportedProtocols": [
+                                    "Http",
+                                    "Https"
+                                ],
+                                "patternsToMatch": [
+                                    "/*"
+                                ],
+                                "forwardingProtocol": "MatchRequest",
+                                "linkToDefaultDomain": "Enabled",
+                                "httpsRedirect": "Enabled",
+                                "enabledState": "Enabled"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles/afdendpoints/routes",
+                            "apiVersion": "2024-06-01-preview",
+                            "name": "[concat(parameters('profiles_frontdoor_name'), format('/{0}/{1}' , parameters('endpointgame') , parameters('gameroute')))]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Cdn/profiles/afdendpoints', parameters('profiles_frontdoor_name'), parameters('endpointgame'))]",
+                                "[resourceId('Microsoft.Cdn/profiles', parameters('profiles_frontdoor_name'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('gamegroup'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups/origins', parameters('profiles_frontdoor_name'), parameters('gamegroup'), parameters('gameorigin1'))]",
+                                "[resourceId('Microsoft.Cdn/profiles/origingroups/origins', parameters('profiles_frontdoor_name'), parameters('gamegroup'), parameters('gameorigin2'))]"
+                            ],
+                            "properties": {
+                                "customDomains": [],
+                                "grpcState": "Disabled",
+                                "originGroup": {
+                                    "id": "[resourceId('Microsoft.Cdn/profiles/origingroups', parameters('profiles_frontdoor_name'), parameters('gamegroup'))]"
+                                },
+                                "ruleSets": [],
+                                "supportedProtocols": [
+                                    "Http",
+                                    "Https"
+                                ],
+                                "patternsToMatch": [
+                                    "/*"
+                                ],
+                                "forwardingProtocol": "MatchRequest",
+                                "linkToDefaultDomain": "Enabled",
+                                "httpsRedirect": "Enabled",
+                                "enabledState": "Enabled"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2022-09-01",
+            "name": "[variables('DeployWeb')]",
+            "resourceGroup": "[parameters('APIResourceGroup')]",
+            "dependsOn": [
+                "[resourceId(subscription().subscriptionId, parameters('APIResourceGroup'), 'Microsoft.Resources/deployments', variables('Group1'))]",
+                "[resourceId(subscription().subscriptionId, parameters('APIResourceGroup2'),'Microsoft.Resources/deployments', variables('Group2'))]",
+                "[resourceId(subscription().subscriptionId, parameters('NetworkResourceGroup'),'Microsoft.Resources/deployments', variables('Network'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                    "RepositoryUrl": {
+                        "Value": "[parameters('RepositoryUrl')]"
+                    },
+                    "Branch": {
+                        "Value": "[parameters('Branch')]"
+                    },
+                    "staticSites_test_web_rps_we_name": {
+                        "Value": "[parameters('staticSites_test_web_rps_we_name')]"
+                    },
+                    "location": {
+                        "Value": "[parameters('location')]"
+                    },
+                    "RepositoryToken": {
+                        "Value": "[parameters('RepositoryToken')]"
+                    },
+                    "appLocation": {
+                        "Value": "[parameters('appLocation')]"
+                    },
+                    "apiLocation": {
+                        "Value": "[parameters('apiLocation')]"
+                    },
+                    "appArtifactLocation": {
+                        "Value": "[parameters('appArtifactLocation')]"
+                    },
+                    "NetworkResourceGroup": {
+                        "Value": "[parameters('NetworkResourceGroup')]"
+                    },
+                    "endpointbot": {
+                        "Value": "[parameters('endpointbot')]"
+                    },
+                    "endpointgame": {
+                        "Value": "[parameters('endpointgame')]"
+                    },
+                    "profiles_frontdoor_name": {
+                        "Value": "[parameters('profiles_frontdoor_name')]"
+                    }
+                },
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "RepositoryUrl": {
+                            "type": "String"
+                        },
+                        "Branch": {
+                            "type": "String"
+                        },
+                        "staticSites_test_web_rps_we_name": {
+                            "type": "String"
+                        },
+                        "location": {
+                            "type": "String"
+                        },
+                        "RepositoryToken": {
+                            "type": "String"
+                        },
+                        "appLocation": {
+                            "type": "String"
+                        },
+                        "apiLocation": {
+                            "type": "String"
+                        },
+                        "appArtifactLocation": {
+                            "type": "String"
+                        },
+                        "NetworkResourceGroup": {
+                            "type": "String"
+                        },
+                        "endpointbot": {
+                            "type": "String"
+                        },
+                        "endpointgame": {
+                            "type": "String"
+                        },
+                        "profiles_frontdoor_name": {
+                            "type": "String"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Web/staticSites",
+                            "apiVersion": "2023-12-01",
+                            "name": "[parameters('staticSites_test_web_rps_we_name')]",
+                            "location": "[parameters('location')]",
+                            "sku": {
+                                "name": "Free",
+                                "tier": "Free"
+                            },
+                            "properties": {
+                                "repositoryUrl": "[parameters('RepositoryUrl')]",
+                                "branch": "[parameters('Branch')]",
+                                "repositoryToken": "[parameters('repositoryToken')]",
+                                "provider": "GitHub",
+                                "buildProperties": {
+                                    "appLocation": "[parameters('appLocation')]",
+                                    "apiLocation": "[parameters('apiLocation')]",
+                                    "appArtifactLocation": "[parameters('appArtifactLocation')]"
+                                }
+                            },
+                            "resources": [
+                                {
+                                    "apiVersion": "2021-01-15",
+                                    "name": "appsettings",
+                                    "type": "config",
+                                    "location": "[parameters('location')]",
+                                    "dependsOn": [
+                                        "[resourceId('Microsoft.Web/staticSites', parameters('staticSites_test_web_rps_we_name'))]"
+                                    ],
+                                    "properties": {
+                                        "BOTAPI_URL": "[format ('https://{0}' , reference(resourceId(subscription().subscriptionId, parameters('NetworkResourceGroup'), 'Microsoft.Cdn/profiles/afdendpoints', parameters('profiles_frontdoor_name'), parameters('endpointbot')), '2024-06-01-preview').hostName)]",
+                                        "GAMEAPI_URL": "[format ('https://{0}' , reference(resourceId(subscription().subscriptionId, parameters('NetworkResourceGroup'), 'Microsoft.Cdn/profiles/afdendpoints', parameters('profiles_frontdoor_name'), parameters('endpointgame')), '2024-06-01-preview').hostName)]"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
