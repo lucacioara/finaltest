@@ -1,0 +1,47 @@
+﻿@page "/join/{sessionId}"
+@using RockPaperScissors.Models
+@using RockPaperScissors.Services
+@inject NavigationManager Navigation
+@inject ISessionService _sessionService
+@inject Session GameSession
+
+<PageTitle>Weather</PageTitle>
+<div class="full-page-container bg-primary text-white">
+    <div class="text-center p-5 rounded" style="background-color: rgba(255, 255, 255, 0.1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+
+        <h1 class="mb-4" style="font-family: 'Arial Black', sans-serif;">Welcome to the Game Zone!</h1>
+
+        <div class="mb-3">
+            <label for="nameInput" class="form-label">Enter your name:</label>
+            <InputText @bind-Value="name" id="nameInput" class="form-control form-control-lg" placeholder="Your name" style="border-radius: 25px;" />
+        </div>
+
+        <div class="mb-4">
+            <button class="btn btn-lg px-5" @onclick="PlayGame" style="background-color: #ff6347; color: white; border-radius: 25px;">🎮 Play!</button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string SessionId { get; set; }
+    private string name = string.Empty;
+
+    private async Task PlayGame()
+    {
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            GameSession.SessionId = SessionId;
+            GameSession.Player = new Player {Id= Guid.NewGuid().ToString(), Name = name,Choice=null };
+            GameSession.IsInvited = true;
+            await _sessionService.EnterExistingGame(SessionId, GameSession.Player.Id);
+            Navigation.NavigateTo($"/gamepage");
+        }
+        else
+        {
+            // displayMessage = "Please enter your name to play.";
+        }
+    }
+}

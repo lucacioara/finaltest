@@ -1,0 +1,241 @@
+﻿@page "/gamepage"
+@inject NavigationManager Navigation
+@inject ISessionService _sessionService
+@inject Session GameSession
+@using System.Web
+@using RockPaperScissors.Models
+@using RockPaperScissors.Services
+
+<PageTitle>Game Page</PageTitle>
+
+<div class="full-page-container" style="background-color: #f0e68c; position: relative; min-height: 100vh;">
+    <div class="d-flex justify-content-between w-100 p-4" style="position: absolute; top: 0; left: 0; right: 0;">
+        @if (!string.IsNullOrEmpty(Player1.Name))
+        {
+            <h2 class="text-dark w-25" style="font-family: 'Comic Sans MS', cursive; font-size: 2rem;">Welcome, @Player1.Name!</h2>
+        }
+        <h1 class="mb-5" style="color: #2e8b57; font-family: 'Arial Black', sans-serif;">Rock, Paper, Scissors!</h1>
+        
+        <div class="card text-center w-25" style="background-color:antiquewhite">
+            <div class="card-body">
+                <h4 style="color: gray; font-family: 'Arial Black', sans-serif;">@statusText</h4>
+
+                <button class="btn btn-lg align-items-center justify-content-center"
+                        @onclick='() => RefreshStatus()'
+                        style="background-color: #ff9900; color: white; font-family: 'Arial Black', sans-serif; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 25px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                    <span>&#x21bb;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="game-section text-center mb-5 ">
+        @if (status?.State != SessionState.Finished)
+        {
+        <div class="row mb-5">
+            <h1 class="display-2" style="color: navy; font-family: 'Arial Black', sans-serif;">@(status?.CurrentRound+"/"+status?.MaxRounds)</h1>
+        </div>
+        }
+        <div class="row mb-5" style="min-width:500px;">
+            <h2 class="col-4 align-content-center" style="color: #ff9900; font-family: 'Arial Black', sans-serif;">
+                @(GameSession
+                    .IsInvited ? "Opponent" : "You")
+            </h2>
+            <h1 class="col-4" style="color: #ff9900; font-family: 'Arial Black', sans-serif;">
+                @(status?.Player1.Points) - @(status?.Player2.Points)
+            </h1>
+            <h2 class="col-4 align-content-center" style="color: #ff9900; font-family: 'Arial Black', sans-serif;">
+                @(GameSession.IsInvited ? "You" : "Opponent")
+            </h2>
+        </div>
+        @if (status?.State == SessionState.NextRound)
+        {
+            <div class="my-4">
+                <button class="btn btn-lg px-5" @onclick="ReadyForNextRound" style="background-color: #ff9900; color: white; font-weight: bold; border-radius: 25px;">Next Round!</button>
+            </div>
+        }
+        @if (status?.State == SessionState.Finished)
+        {
+            switch (status.Result)
+            {
+                case SessionResult.Player1:
+                    if (GameSession.IsInvited)
+                    {
+                        <h3>You lost the game!</h3>
+                    }
+                    else
+                    {
+                        <h3>You won the game!🎉</h3>
+                    }
+                    break;
+                case SessionResult.Player2:
+                    if (GameSession.IsInvited)
+                    {
+                        <h3>You won the game!🎉</h3>
+                    }
+                    else
+                    {
+                        <h3>You lost the game!</h3>
+                    }
+                    break;
+            }
+
+            <button class="btn btn-lg align-items-center justify-content-center"
+                    @onclick="StartNewGame"
+                    style="background-color: #32cd32; color: white; font-family: 'Arial Black', sans-serif; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 25px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 10px 20px;">
+                Start New Game ➡️
+            </button>
+        }
+        else
+        {
+        <div class="mx-auto p-2 border border-success rounded bg-white shadow-lg" style="width: 300px;">
+                @if (Result != null && status?.State != SessionState.Finished)
+                {
+                    switch (Result)
+                    {
+                        case SessionResult.Player1:
+                            if (GameSession.IsInvited)
+                            {
+                                <h3>You lost!</h3>
+                            }
+                            else
+                            {
+                                <h3>You won!🎉</h3>
+                            }
+                            break;
+                        case SessionResult.Player2:
+                            if (GameSession.IsInvited)
+                            {
+                                <h3>You won!🎉</h3>
+                            }
+                            else
+                            {
+                                <h3>You lost!</h3>
+                            }
+                            break;
+                        case SessionResult.Tie:
+                            <h3>It's a tie!</h3>
+                            break;
+                    }
+                }
+                else
+
+            @if (Player1.Choice != null)
+            {
+                <h4 style="color: #2e8b57;">Your Selection: @Player1.Choice</h4>
+            }
+            else
+            {
+                <h4 style="color: #2e8b57;">Make Your Move!</h4>
+            }
+        </div>
+        <div class="row justify-content-center align-items-center mt-5" style="max-width: 500px; margin: 0 auto;">
+            <button class="col-3 btn btn-outline-dark btn-lg ps-2 mx-3" @onclick='() => SelectMove(Choice.Rock)' style="border-radius: 15px; background-color: #ff7f50;" disabled="@disabled">
+                    <p class="display-3">🗿</p>
+                    <h3>Rock</h3>
+            </button>
+            <button class="col-3 btn btn-outline-dark btn-lg p-2 mx-3" @onclick='() => SelectMove(Choice.Paper)' style="border-radius: 15px; background-color: #32cd32;" disabled="@disabled">
+                    <p class="display-3">📄</p>
+                    <h3>Paper</h3>
+            </button>
+            <button class="col-3 btn btn-outline-dark btn-lg p-2 mx-3" @onclick='() => SelectMove(Choice.Scissors)' style="border-radius: 15px; background-color: #1e90ff;" disabled="@disabled">
+                    <p class="display-3">✂</p>
+                    <h3>Scissors</h3>
+            </button>
+        </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Player Player1;
+    private string playerName = string.Empty;
+    private SessionResult? Result;
+    private bool disabled = false;
+    string sessionId;
+    private SessionStatus status;
+    private string statusText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Player1 = GameSession.Player;
+        sessionId = GameSession.SessionId;
+        await RefreshStatus();
+    }
+
+    private async Task SelectMove(Choice choice)
+    {
+        disabled = true;
+        Player1.Choice = choice;
+        await _sessionService.CastInVote(sessionId, Player1.Id, Player1.Choice.Value);
+        await RefreshStatus();
+        if (status.State == SessionState.WaitingForResult)
+        {
+            Result = await _sessionService.GetSessionResult(sessionId);
+            await RefreshStatus();
+        }
+        StateHasChanged();
+    }
+    private async Task ClearMove()
+    {
+        Player1.Choice = null;
+    }
+    private async Task ReadyForNextRound()
+    {
+        await _sessionService.ReadyForNextRound(sessionId, Player1.Id);
+        await RefreshStatus();
+        ClearMove();
+    }
+
+    private async Task RefreshStatus()
+    {
+        status = await _sessionService.GetStatus(sessionId);
+        switch (status.State)
+        {
+            case SessionState.Created:
+                statusText = "Session Created";
+                break;
+            case SessionState.WaitingForPlayer:
+                statusText = "Waiting for player to join";
+                break;
+            case SessionState.WaitingForMoves:
+                statusText = "Waiting for both players to make a move";
+                Result = null;
+                disabled = false;
+                break;
+            case SessionState.WaitingForMove:
+                if (Player1.Choice != null)
+                    disabled = true;
+                else
+                {
+                    disabled = false;
+                }
+                var who = disabled ? "enemy" : "you";
+                statusText = $"Waiting for {who} to make a move";
+                Result = null;
+                break;
+            case SessionState.NextRound:
+                statusText = $"Waiting for next round";
+                Result = await _sessionService.GetSessionResult(sessionId);
+                Player1.Choice = null;
+                break;
+            case SessionState.WaitingForResult:
+                statusText = "Waiting for session result";
+                break;
+            case SessionState.Finished:
+                statusText = "Session Finished";
+                if (Result is null)
+                    Result = await _sessionService.GetSessionResult(sessionId);
+                break;
+            default:
+                statusText = "Unknown";
+                break;
+        }
+    }
+
+    private void StartNewGame()
+    { 
+        Navigation.NavigateTo("/createsession");
+    }
+}
