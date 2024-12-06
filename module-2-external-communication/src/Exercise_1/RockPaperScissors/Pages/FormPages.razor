@@ -1,0 +1,481 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.WebUtilities
+@using RockPaperScissors.Models
+@using RockPaperScissors.Services
+@using System.Net
+@using System.Web
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HubConnection Connection
+@inject NavigationManager Navigation
+@inject ISessionService _sessionService
+@inject IBotService _botService
+@inject Session GameSession
+@inject IJSRuntime JS
+
+<PageTitle>Game Zone</PageTitle>
+
+<div class="hs-step-form overflow-hidden" style="min-height:100vh;">
+    <div class="wizard-container mt-5" style="max-width: 1100px; margin: 0 auto; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);">
+
+        <ul id="stepFormProgress" class="step step-sm step-inline step-item-between mb-5 d-flex justify-content-center align-items-center flex-wrap">
+            <li class="step-item">
+                <a class="step-content-wrapper @GetStepClass(1)" style="text-decoration:none;" href="javascript:;">
+                    <span class="step-icon step-icon-soft-dark rounded-circle" style="width: 40px; height: 40px;line-height: 40px; display: inline-block; text-align: center;">
+                        1
+                    </span>
+                    <div class="step-content">
+                        <span class="step-title" style="font-family: 'Segoe UI', sans-serif;">Player name</span>
+                    </div>
+                </a>
+            </li>
+            <li class="step-item">
+                <a class="step-content-wrapper @GetStepClass(2)" style="text-decoration:none;" href="javascript:;">
+                    <span class="step-icon step-icon-soft-dark rounded-circle" style="width: 40px; height: 40px;line-height: 40px; display: inline-block; text-align: center;">
+                        2
+                    </span>
+                    <div class="step-content">
+                        <span class="step-title" style="font-family: 'Segoe UI', sans-serif;">Rounds</span>
+                    </div>
+                </a>
+            </li>
+            <li class="step-item">
+                <a class="step-content-wrapper @GetStepClass(3)" style="text-decoration:none;" href="javascript:;">
+                    <span class="step-icon step-icon-soft-dark rounded-circle" style="width: 40px; height: 40px;line-height: 40px; display: inline-block; text-align: center;">
+                        3
+                    </span>
+                    <div class="step-content">
+                        <span class="step-title" style="font-family: 'Segoe UI', sans-serif;">Invite</span>
+                    </div>
+                </a>
+            </li>
+            <li class="step-item">
+                <a class="step-content-wrapper @GetStepClass(4)" style="text-decoration:none;" href="javascript:;">
+                    <span class="step-icon step-icon-soft-dark rounded-circle" style="width: 40px; height: 40px;line-height: 40px; display: inline-block; text-align: center;">
+                        4
+                    </span>
+                    <div class="step-content">
+                        <span class="step-title" style="font-family: 'Segoe UI', sans-serif;">Configurations</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+
+        <div id="basicStepInfo" class="step h-100" style="display: block; transition: opacity 0.5s ease;">
+            <h4 class="mb-4 mx-4" style="font-family:'Segoe UI', sans-serif; color: #2c3e50;">Enter your name</h4>
+            <div class="full-page-container h-100 d-flex justify-content-center align-items-center">
+                <div class="text-center p-3 p-md-5 rounded" style="opacity: 0.95; width: 100%; max-width: 900px;">
+                    <div class="mb-0">
+                        <InputText @bind-Value="name" id="nameInput" class="form-control form-control-lg mb-3" placeholder="John Doe"
+                                   style="border-radius: 25px; border: 2px solid #ccc; padding: 15px; background-color: #f0f4f7; color: #2c3e50;" @onkeydown="HandleKeyPress" />
+                        <InputText @bind-Value="email" id="emailInput" class="form-control form-control-lg" placeholder="johndoe@mail.com"
+                                   style="border-radius: 25px; border: 2px solid #ccc; padding: 15px; background-color: #f0f4f7; color: #2c3e50;" @onkeydown="HandleKeyPress" />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(displayMessage))
+                    {
+                        <p class="lead mt-3" style="color: #2c3e50;">@displayMessage</p>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-primary" @onclick=" NextStep">
+                        Next <i class="bi-chevron-right small" style="font-family: 'Segoe UI', sans-serif;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="basicStepTerms" class="step h-100" style="display: none; transition: opacity 0.5s ease;">
+            <h4 class="mb-4 mx-4" style="font-family: 'Segoe UI', cursive; color: #2c3e50;">Number of Rounds</h4>
+            <div class="full-page-container h-100 d-flex justify-content-center align-items-center">
+                <div class="text-center p-3 p-md-5 rounded" style="opacity: 0.95; width: 100%; max-width: 700px;">
+                    <div class="d-flex flex-column align-items-center mb-5" style="width: 100%;">
+                        <div class="input-group w-5">
+                            <button class="btn btn-outline-secondary" @onclick="DecrementRounds">-</button>
+                            <span class="form-control text-center w-50 w-lg-100"
+                                  style="font-size: 1.1rem; padding: 10px; background-color: #f8f9fa; width: 80px;">
+                                @numberOfRounds
+                            </span>
+                            <button class="btn btn-outline-secondary" @onclick="IncrementRounds">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <button type="button" style="border-radius: 25px;background-color: #f0f4f7;color: #2c3e50;box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" class="btn btn-ghost-secondary me-2" @onclick="PreviousStep">
+                    <i class="bi-chevron-left small" style="font-family: 'Segoe UI', sans-serif;"></i> Previous step
+                </button>
+
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-primary" @onclick="CreateGameSession">
+                        Next <i class="bi-chevron-right small" style="font-family: 'Segoe UI', sans-serif;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="basicStepMembers" class="step h-100" style="display: none; transition: opacity 0.5s ease;">
+            <h4 class="mb-4 mx-4" style="font-family: 'Segoe UI', sans-serif; color: #2c3e50;">Create Game Session</h4>
+            <div class="full-page-container h-100 d-flex justify-content-center align-items-center">
+                <div class="text-center p-5 rounded" style="opacity: 0.95;">
+
+                    <div class="mb-4">
+                        <div class="form-check" style="font-size: 1.25rem; padding: 10px;">
+                            <input class="form-check-input" type="radio" name="gameOption" id="inviteFriendOption" value="inviteFriend" @onchange="OnOptionChanged" checked="@inviteFriendChecked" disabled="@inviteFriendDisabled" style="transform: scale(1.5);">
+                            <label class="form-check-label" for="inviteFriendOption" style="padding-left: 10px; font-size: 1.25rem;">
+                                🤝 Invite a Friend
+                            </label>
+                        </div>
+                        <div class="form-check" style="font-size: 1.25rem; padding: 10px;">
+                            <input class="form-check-input" type="radio" name="gameOption" id="addBotOption" value="addBot" @onchange="OnOptionChanged" disabled="@addBotDisabled" style="transform: scale(1.5);">
+                            <label class="form-check-label" for="addBotOption" style="padding-left: 10px; font-size: 1.25rem;">
+                                🤖 Add a Bot
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        @if (selectedOption == "inviteFriend")
+                        {
+                            <button class="btn btn-lg btn-warning w-40" @onclick="InviteFriend" style="border-radius: 30px; background-color: #f0f4f7; color: #2c3e50; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                                🤝 Invite a Friend
+                            </button>
+                        }
+                        else if (selectedOption == "addBot")
+                        {
+                            <button class="btn btn-lg btn-info w-40" @onclick="AddBot" style="border-radius: 25px; background-color: #f0f4f7; color: #2c3e50; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" disabled="@(BotResult!=HttpStatusCode.OK)">
+                                🤖 Add a Bot
+                            </button>
+                        }
+                    </div>
+
+                    @if (selectedOption == "addBot" && BotResult == HttpStatusCode.ServiceUnavailable)
+                    {
+                        <button class="btn btn-primary mb-4" @onclick="CheckBotAPI" type="button">Check bot API</button>
+                    }
+
+                    @if (inviteLinkCreated)
+                    {
+                        <div class="row mb-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" value="@inviteLink" disabled style="background-color: #f8f9fa; color: #2c3e50;">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" @onclick="CopyInviteLink" type="button" style="border-radius: 25px; background-color: #6c8cd5; color: white;">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @errorMessage
+                   
+                </div>
+            </div>
+
+            <div class="text-center d-flex justify-content-center">
+                @if (playerJoined)
+                {
+                    <div class="alert alert-info" role="alert" style="background-color: #e0f7fa; color: #2c3e50;">
+                        You can start the game.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info" role="alert" style="background-color: #e0f7fa; color: #2c3e50;">
+                        You can't start the game until the other player joins the session.
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex align-items-center">
+                <button type="button" style="border-radius: 25px;background-color: #f0f4f7;color: #2c3e50;box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" class="btn btn-ghost-secondary me-2" @onclick="PreviousStep2">
+                    <i class="bi-chevron-left small" style="font-family: 'Segoe UI', sans-serif;"></i> Previous step
+                </button>
+
+                <div class="ms-auto">
+                    <button type="button" disabled="@(!playerJoined)" class="btn btn-primary" @onclick="NextStep2">
+                        Next <i class="bi-chevron-right small" style="font-family: 'Segoe UI', sans-serif;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="basicStepConfigurations" class="step h-100" style="display: none; transition: opacity 0.5s ease;">
+            <h4 class="mb-4 mx-4" style="font-family: 'Segoe UI', sans-serif; color: #2c3e50;">Game Configurations</h4>
+            <div class="full-page-container h-100 d-flex justify-content-center align-items-center">
+                <div class="text-left p-5" style="background-color: white; opacity: 0.95; width: 100%; max-width: 400px;">
+
+                    <div class="text-dark mb-4" style="font-family: 'Segoe UI', cursive; font-size: 1.5rem; margin-bottom: 20px; text-align: left;">
+                        <label>Welcome,</label> @status?.Player1.Name!
+                    </div>
+
+                    <div class="text-dark mb-4" style="font-family: 'Segoe UI', cursive; font-size: 1.5rem; margin-bottom: 20px; text-align: left;">
+                        <label>You are playing against</label> @status?.Player2?.Name!
+                    </div>
+
+                    <div class="text-dark mb-4" style="font-family: 'Segoe UI', cursive; font-size: 1.5rem; margin-bottom: 20px; text-align: left;">
+                        <label>The number of rounds is</label> @status?.MaxRounds!
+                    </div>
+
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-primary" @onclick=" GoToGame">
+                        Play <i class="bi-chevron-right small" style="font-family: 'Segoe UI', sans-serif;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    window.clipboardCopy = function(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert("Copied to clipboard!");
+        })
+            .catch(function(error) {
+                alert("Error copying text: " + error);
+            });
+    }
+</script>
+
+@code {
+    private string name = string.Empty;
+    private string email = string.Empty;
+    private string displayMessage = string.Empty;
+    private Player Player1;
+    private SessionResult? Result;
+    private int numberOfRounds = 3;
+    private string sessionId;
+    private string currentStep = "#basicStepInfo";
+    private string inviteLink = string.Empty;
+    private bool inviteLinkCreated = false;
+    private bool invited = false;
+    private bool playerJoined;
+    private HttpStatusCode BotResult;
+    private SessionStatus status;
+    private string selectedOption = "inviteFriend";
+    private bool inviteFriendChecked = true;
+    private bool addBotDisabled = false;
+    private bool inviteFriendDisabled = false;
+    private bool isCircuitOpen = false;
+    string errorMessage = string.Empty;
+    public string Email { get; set; }
+    public EmailData Data { get; set; } = new EmailData();
+
+
+
+
+    private string GetStepClass(int stepNumber)
+    {
+        return currentStep == $"#basicStepInfo" && stepNumber == 1 || currentStep == $"#basicStepTerms" && stepNumber == 2 || currentStep == $"#basicStepMembers" && stepNumber == 3 || currentStep == $"#basicStepConfigurations" && stepNumber == 4
+            ? "active"
+            : "";
+    }
+
+    private async void ShowStep(string stepId)
+    {
+        currentStep = stepId;
+        await JS.InvokeVoidAsync("eval", "document.querySelectorAll('.step').forEach(function(el) { el.style.display = 'none'; })");
+        await JS.InvokeVoidAsync("eval", $"document.querySelector('{stepId}').style.display = 'block'");
+        StateHasChanged();
+    }
+    private void OnOptionChanged(ChangeEventArgs e)
+    {
+        selectedOption = e.Value.ToString();
+        if (selectedOption == "inviteFriend")
+        {
+            addBotDisabled = true;
+            inviteFriendDisabled = false;
+        }
+        else if (selectedOption == "addBot")
+        {
+            inviteFriendDisabled = true;
+            addBotDisabled = false;
+        }
+    }
+
+    private void NextStep()
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            displayMessage = "Please enter your name to continue.";
+            return;
+        }
+        GameSession.Player = new Player() { Id = Guid.NewGuid().ToString(), Choice = null, Name = name,Email=email };
+        Player1 = GameSession.Player;
+        ShowStep("#basicStepTerms");
+    }
+    private void NextStep2()
+    {
+        ShowStep("#basicStepConfigurations");
+    }
+
+    private void PreviousStep()
+    {
+        ShowStep("#basicStepInfo");
+    }
+    private void PreviousStep2()
+    {
+        ShowStep("#basicStepTerms");
+    }
+
+    private void IncrementRounds()
+    {
+        if (numberOfRounds < 101)
+        {
+            numberOfRounds += 2;
+        }
+    }
+
+    private void DecrementRounds()
+    {
+        if (numberOfRounds > 1)
+        {
+            numberOfRounds -= 2;
+        }
+    }
+    private async Task CreateGameSession()
+    {
+        sessionId = Guid.NewGuid().ToString();
+        GameSession.SessionId = sessionId;
+        await _sessionService.CreateSession(sessionId, GameSession.Player);
+        await _sessionService.SetNumberOfRounds(sessionId, numberOfRounds);
+        Connection.On<SessionStatus>("SendStatus", (session) =>
+      {
+          status = session;
+          RefreshStatus();
+          StateHasChanged();
+      });
+        if (Connection.State == HubConnectionState.Connected)
+        {
+            await Connection.InvokeAsync("JoinSession", sessionId);
+        }
+        else
+        {
+            await Connection.StartAsync();
+            await Connection.InvokeAsync("JoinSession", sessionId);
+        }
+        ShowStep("#basicStepMembers");
+    }
+
+    private void InviteFriend()
+    {
+        inviteLink = $"{Navigation.BaseUri}join/{sessionId}";
+        inviteLinkCreated = true;
+        invited = true;
+        StateHasChanged();
+    }
+    private async Task CheckBotAPI()
+    {
+        BotResult = await _botService.CheckBotAPI();
+        BotService service = _botService as BotService;
+        if (service.IsCircuitOpen)
+        {
+            isCircuitOpen = true;
+            StateHasChanged();
+        }
+        else
+        {
+            isCircuitOpen = false;
+
+        }
+        errorMessage = service.ErrorMessage;
+
+    }
+
+    private async Task AddBot()
+    {
+        await CheckBotAPI();
+        if (BotResult == HttpStatusCode.OK)
+        {
+            await _sessionService.InviteBot(sessionId);
+
+            invited = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CopyInviteLink()
+    {
+        JS.InvokeVoidAsync("clipboardCopy", inviteLink);
+    }
+
+    private void GoToGame()
+    {
+        Navigation.NavigateTo($"/gamepage");
+    }
+
+    private void RefreshStatus()
+    {
+        switch (status.State)
+        {
+            case SessionState.Created:
+            case SessionState.WaitingForPlayer:
+                playerJoined = false;
+                break;
+            case SessionState.WaitingForMoves:
+                playerJoined = true;
+                break;
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        GameSession.IsInvited = false;
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("step", out var stepValue))
+        {
+            if (int.TryParse(stepValue, out var stepNumber))
+            {
+                ChangeStep(stepNumber);
+            }
+        }
+        await CheckBotAPI();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var uri = new Uri(Navigation.Uri);
+            var fragment = uri.Fragment;
+
+            if (!string.IsNullOrEmpty(fragment))
+            {
+                ShowStep(fragment);
+            }
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            NextStep();
+        }
+    }
+
+    private void ChangeStep(int stepNumber)
+    {
+        switch (stepNumber)
+        {
+            case 1:
+                ShowStep("#basicStepInfo");
+                break;
+            case 2:
+                ShowStep("#basicStepTerms");
+                break;
+            case 3:
+                ShowStep("#basicStepMembers");
+                break;
+            case 4:
+                ShowStep("#basicStepConfigurations");
+                break;
+        }
+    }
+}

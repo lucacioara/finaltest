@@ -1,0 +1,70 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using RockPaperScissors.Models;
+
+namespace RockPaperScissors.Services
+{
+    public interface ISessionService
+    {
+        Task<IActionResult> CastInVote(string sessionId, Player player);
+        Task<IActionResult> CreateSession(string sessionId, Player player);
+        Task<SessionStatus> GetStatus(string sessionId);
+        Task<SessionResult> GetSessionResult(string sessionId);
+        Task<IActionResult> InviteBot(string sessionId);
+        Task<IActionResult> EnterExistingGame(string sessionId, Player player);
+        Task<IActionResult> SetNumberOfRounds(string sessionId, int numberOfRounds);
+        Task<IActionResult> RefreshStatus(string sessionId);
+        Task<IActionResult> ForfeitGame(string sessionId, string playerId);
+    }
+    public class SessionService : ISessionService
+    {
+        private IApiService _apiService;
+
+        public SessionService(IApiService apiService)
+        {
+            _apiService = apiService;
+        }
+
+        public async Task<IActionResult> CastInVote(string sessionId, Player player)
+        {
+            return await _apiService.PostAsync<IActionResult>($"/game/api/Session/send/{sessionId}", player);
+        }
+
+        public async Task<IActionResult> CreateSession(string sessionId, Player player)
+        {
+            return await _apiService.PostAsync<IActionResult>($"/game/api/Session/create/{sessionId}", player);
+        }
+
+        public async Task<IActionResult> EnterExistingGame(string sessionId, Player player)
+        {
+            return await _apiService.PostAsync<IActionResult>($"/game/api/Session/join/{sessionId}", player);
+        }
+        public async Task<IActionResult> ForfeitGame(string sessionId, string playerId)
+        {
+            return await _apiService.PostAsync<IActionResult>($"/game/api/Session/forfeit/{sessionId}", playerId);
+        }
+
+        public async Task<SessionResult> GetSessionResult(string sessionId)
+        {
+            return await _apiService.GetAsync<SessionResult>($"/game/api/Session/result/{sessionId}");
+        }
+
+        public async Task<SessionStatus> GetStatus(string sessionId)
+        {
+            return await _apiService.GetAsync<SessionStatus>($"/game/api/Session/status/{sessionId}");
+        }
+
+        public async Task<IActionResult> InviteBot(string sessionId)
+        {
+            return await _apiService.GetAsync<IActionResult>($"/game/api/Session/invite/{sessionId}");
+        }
+
+        public async Task<IActionResult> SetNumberOfRounds(string sessionId, int numberOfRounds)
+        {
+            return await _apiService.GetAsync<IActionResult>($"/game/api/Session/round/{sessionId}/{numberOfRounds}");
+        }
+        public async Task<IActionResult> RefreshStatus(string sessionId)
+        {
+            return await _apiService.GetAsync<IActionResult>($"/game/api/Session/refresh/{sessionId}/");
+        }
+    }
+}

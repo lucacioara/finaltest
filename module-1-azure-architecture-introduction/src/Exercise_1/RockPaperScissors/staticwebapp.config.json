@@ -1,0 +1,26 @@
+{
+  "routes": [
+    {
+      "route": "/join/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/createsession/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/gamepage/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/setround/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    }
+  ]
+}
