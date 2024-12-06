@@ -1,0 +1,289 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "containerapps_bot_api_name": {
+            "defaultValue": "bot-api-we-dev",
+            "type": "String"
+        },
+        "containerapps_game_api_name": {
+            "defaultValue": "game-api-we-dev",
+            "type": "String"
+        },
+        "managedEnvironments_env_name": {
+            "defaultValue": "rockpaperscissors-env-we-dev",
+            "type": "String"
+        },
+        "location": {
+            "defaultValue": "westeurope",
+            "type": "String"
+        },
+        "virtualNetworks_vnet_name": {
+            "type": "String"
+        },
+        "vnet_subnet_name": {
+            "defaultValue": "default",
+            "type": "String"
+        },
+        "environment-subnet-name": {
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-01-01",
+            "name": "[parameters('virtualNetworks_vnet_name')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('vnet_subnet_name')]",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('vnet_subnet_name'))]",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "[parameters('environment-subnet-name')]",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name'))]",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24",
+                            "delegations": [
+                                {
+                                    "name": "0",
+                                    "id": "[concat(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name')), '/delegations/0')]",
+                                    "properties": {
+                                        "serviceName": "Microsoft.App/environments"
+                                    },
+                                    "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+                                }
+                            ],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('virtualNetworks_vnet_name'), '/' ,parameters('environment-subnet-name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.0.1.0/24",
+                "delegations": [
+                    {
+                        "name": "0",
+                        "id": "[concat(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), 'environment-subnet-name'), '/delegations/0')]",
+                        "properties": {
+                            "serviceName": "Microsoft.App/environments"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
+                    }
+                ],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-01-01",
+            "name": "[concat(parameters('virtualNetworks_vnet_name'), '/', parameters('vnet_subnet_name'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.0.0.0/24",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2024-03-01",
+            "name": "[parameters('managedEnvironments_env_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name'))]"
+            ],
+            "properties": {
+                "vnetConfiguration": {
+                    "internal": false,
+                    "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_name'), parameters('environment-subnet-name'))]"
+                },
+                "zoneRedundant": false,
+                "kedaConfiguration": {},
+                "daprConfiguration": {},
+                "customDomainConfiguration": {},
+                "workloadProfiles": [
+                    {
+                        "workloadProfileType": "Consumption",
+                        "name": "Consumption"
+                    }
+                ],
+                "peerAuthentication": {
+                    "mtls": {
+                        "enabled": false
+                    }
+                },
+                "peerTrafficConfiguration": {
+                    "encryption": {
+                        "enabled": false
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/containerapps",
+            "apiVersion": "2024-03-01",
+            "name": "[parameters('containerapps_bot_api_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]"
+            ],
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]",
+                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]",
+                "workloadProfileName": "Consumption",
+                "configuration": {
+                    "activeRevisionsMode": "Single",
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 8080,
+                        "exposedPort": 0,
+                        "transport": "Auto",
+                        "traffic": [
+                            {
+                                "weight": 100,
+                                "latestRevision": true
+                            }
+                        ],
+                        "allowInsecure": false,
+                        "corsPolicy": {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ],
+                            "maxAge": 0,
+                            "allowCredentials": false
+                        }
+                    },
+                    "dapr": {
+                        "enabled": true,
+                        "appId": "botapi",
+                        "appProtocol": "http",
+                        "appPort": 8080,
+                        "logLevel": "info",
+                        "enableApiLogging": false
+                    },
+                    "maxInactiveRevisions": 100
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "image": "casianbara/botapi-rockpaperscissors:latest",
+                            "name": "[parameters('containerapps_bot_api_name')]",
+                            "resources": {
+                                "cpu": 0.5,
+                                "memory": "1Gi"
+                            }
+                        }
+                    ],
+                    "scale": {
+                        "maxReplicas": 1
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/containerapps",
+            "apiVersion": "2024-03-01",
+            "name": "[parameters('containerapps_game_api_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]"
+            ],
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]",
+                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('managedEnvironments_env_name'))]",
+                "workloadProfileName": "Consumption",
+                "configuration": {
+                    "activeRevisionsMode": "Single",
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 8080,
+                        "exposedPort": 0,
+                        "transport": "Auto",
+                        "traffic": [
+                            {
+                                "weight": 100,
+                                "latestRevision": true
+                            }
+                        ],
+                        "allowInsecure": false,
+                        "corsPolicy": {
+                            "allowedOrigins": [
+                                "*"
+                            ],
+                            "allowedHeaders": [
+                                "*"
+                            ],
+                            "maxAge": 0,
+                            "allowCredentials": false
+                        }
+                    },
+                    "dapr": {
+                        "enabled": true,
+                        "appId": "gameapi",
+                        "appProtocol": "http",
+                        "appPort": 8080,
+                        "logLevel": "info",
+                        "enableApiLogging": false
+                    },
+                    "maxInactiveRevisions": 100
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "image": "casianbara/gameapi-rockpaperscissors:latest",
+                            "name": "[parameters('containerapps_game_api_name')]",
+                            "resources": {
+                                "cpu": 0.5,
+                                "memory": "1Gi"
+                            }
+                        }
+                    ],
+                    "scale": {
+                        "maxReplicas": 1
+                    }
+                }
+            }
+        }
+    ]
+}

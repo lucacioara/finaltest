@@ -1,0 +1,16 @@
+componentType: state.azure.cosmosdb
+version: v1
+metadata:
+  - name: url
+    value: "<cosmos-url>"
+  - name: masterKey
+    value: "<cosmos-primary-key>"
+  - name: database
+    value: "rockpaperscissors"
+  - name: collection
+    value: "actors"
+  - name: actorStateStore
+    value: "true"  # Enable actor state store
+scopes:
+  - gameapi
+  - botapi
